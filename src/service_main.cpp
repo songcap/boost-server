@@ -47,15 +47,15 @@ void MeterServer::StartService(void)
 {
         StartAccept();
         //this->io_service_.run();
-        /*boost::thread_group group ;
+        boost::thread_group group;
          for (int num = 0 ; num < 20 ; ++num)
          {
                     //create_thread()是一个工厂函数，可以创建thead对象并运行线程，同时加入内部的list
                     // group.create_thread(boost::bind(&runchild , num)) ;
-                    group.create_thread(boost::bind(&boost::asio::io_service::run, boost::ref(io_service_))) ;
+                    group.create_thread(boost::bind(&ThreadRun)) ;
           }
-         group.join_all() ; //等待所有线程执行结束*/
-         io_service_.run();
+         group.join_all() ; //等待所有线程执行结束
+         //io_service_.run();
 }
 
 void  MeterServer::StartSend(char * buffer,size_t buff_size)

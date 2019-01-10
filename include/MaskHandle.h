@@ -10,10 +10,14 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio/basic_stream_socket.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/thread.hpp>
 
 #include "Meter_protocl.h"
 #include "MySqlAPI.h"
 
+#define   INSERT 1
+#define   CREATE_TABLE 2
 
 using namespace std;
 using namespace boost::asio;
@@ -28,7 +32,7 @@ using boost::system::error_code;
 异步的话就是触发一个指令之后如果有指令就放在队列里面执行。
 readhandle函数里面记得再一次调用read函数就好。
 */
-
+boost::mutex mutex;
 class MaskHandle
 {
     public:
@@ -38,6 +42,7 @@ class MaskHandle
         char * getBuf();
         boost::shared_ptr< boost::asio::ip::tcp::socket > getSocket();
         void  ReadHandle(const boost::system::error_code& error,size_t bytes_transferred);
+
     private:
         char  buf_[100];
         Meter_Message mes;
@@ -51,7 +56,7 @@ class MaskHandle
         void updateMes();
 
         void  MeterGetTime();
-        string MysqlInstruct();
+        string MysqlInstruct(int mode);
 };
 
 

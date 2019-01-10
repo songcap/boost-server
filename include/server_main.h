@@ -57,7 +57,7 @@ private:
           void  SendHandle(const boost::system::error_code& error ,size_t bytes_transferred,char * buf);
 };
 
+void ThreadRun();
 //当服务端连接出现异常该如何处理
-
 
 #endif

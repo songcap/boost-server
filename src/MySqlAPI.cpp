@@ -38,6 +38,7 @@ bool MySQLInterface::connectMySQL(char* server, char* username, char* password, 
 }
 
 
+
 //判断数据库是否存在，不存在则创建数据库，并打开
 bool MySQLInterface::createDatabase(std::string& dbname)
 {
@@ -59,9 +60,15 @@ bool MySQLInterface::createDatabase(std::string& dbname)
         	return false;
 }
 
+/*
+
+
+
+ */
 //判断数据库中是否存在相应表，不存在则创建表
 bool MySQLInterface::createdbTable(const std::string& query)
 {
+
         	if (0 == mysql_query(&mysqlInstance,query.c_str()))
         	{
         		cout<<"creat table success!"<<endl;

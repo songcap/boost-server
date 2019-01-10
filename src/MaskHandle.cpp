@@ -36,7 +36,6 @@ void  MaskHandle::ReadService()
     memset(this->buf_,0,100);
     this->socket_->async_read_some(boost::asio::buffer(this->buf_,sizeof(Meter_Message)),
     boost::bind(&MaskHandle::ReadHandle,this,boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred));
-    cout << "ReadService  ++++++++++++-----------" << endl;
 }
 
 
@@ -63,7 +62,14 @@ void MaskHandle::ReadHandle(const boost::system::error_code& error ,size_t bytes
                     //获取当前时间
                     MeterGetTime();
                     //记录消息到数据库
-                    this->SqlTool->writeDataToDB(MysqlInstruct());
+                    //MysqlInstruct(CREATE_TABLE);
+                    mutex.lock();
+                    if(pnow->tm_mon== 12 &&pnow->tm_mday == 31)
+                    {
+                          this->SqlTool->createdbTable(MysqlInstruct(CREATE_TABLE));
+                    }
+                    this->SqlTool->writeDataToDB(MysqlInstruct(INSERT));
+                    mutex.unlock();
                     ReadService();
               }
        }
@@ -72,7 +78,6 @@ void MaskHandle::ReadHandle(const boost::system::error_code& error ,size_t bytes
 
 void MaskHandle::updateMes()
 {
-    cout << "**********" << endl;
     memcpy(&mes,this->buf_,sizeof(Meter_Message));
     cout << mes.id << endl;
 }
@@ -83,12 +88,24 @@ void  MaskHandle::MeterGetTime()
     now_time  =  time(NULL);
     this->pnow =  localtime(&now_time);
     this->pnow->tm_mon += 1;
+    this->pnow->tm_year += 1900;
 }
 
-string MaskHandle::MysqlInstruct()
+string MaskHandle::MysqlInstruct(int mode)
 {
-    char sqlBuf[70];
-    sprintf(sqlBuf,"INSERT INTO `2019_meter_message`  VALUES ( %d,'%c',%d,%d,%d%d%2d);" ,mes.id, mes.status,pnow->tm_mon,pnow->tm_mday,pnow->tm_hour,pnow->tm_min,pnow->tm_sec);
+    char sqlBuf[300];
+    switch(mode)
+    {
+        case INSERT:
+         sprintf(sqlBuf,"INSERT INTO `%d_meter_message`  VALUES ( %d,'%c','%d-%d-%d','%2d:%2d:%2d');" ,pnow->tm_year,mes.id, mes.status,pnow->tm_year,pnow->tm_mon,pnow->tm_mday,pnow->tm_hour,pnow->tm_min,pnow->tm_sec);
+          cout << sqlBuf << endl;
+          break;
+         case CREATE_TABLE :
+         sprintf(sqlBuf,"Create Table If Not Exists `electric`.`%d_meter_message`( `id_ele` Bigint(8) unsigned,`status` Varchar(1),`dates` Date, `hour_min` Time )Engine InnoDB", pnow->tm_year);
+          break;
+         default:
+          break;
+    }
     string str(sqlBuf);
     return sqlBuf;
 }
